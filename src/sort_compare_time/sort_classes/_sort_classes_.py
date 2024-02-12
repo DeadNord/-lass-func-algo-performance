@@ -22,6 +22,7 @@ class TimeMeasurer:
         timer = timeit.Timer(lambda: func(*args))
         times = timer.repeat(repeat, number)
         best_time = min(times) / number
+
         return best_time
 
 
