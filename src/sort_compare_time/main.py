@@ -94,20 +94,64 @@ def main(data_sizes):
 
     # Define the algorithms to compare
     algorithms = ["Merge Sort", "Insertion Sort", "TimSort"]
-    headers = ["Data Size", "Sort Function", "Sort Classes"]
+    headers = [
+        "Data Size",
+        "Sort Function Time",
+        "Sort Classes Time",
+        "Percentage Increase",
+        "Speedup Factor",
+        "Absolute Time Savings (s)",
+    ]
 
     # Process results for each algorithm
     for alg in algorithms:
-        table_data = [
-            [size, sort_func_results[alg][i], sort_classes_results[alg][i]]
-            for i, size in enumerate(data_sizes)
-        ]
+        table_data = []
+        cost_per_element_table = []
+
+        for i, size in enumerate(data_sizes):
+            func_time = sort_func_results[alg][i]
+            class_time = sort_classes_results[alg][i]
+            percentage_increase = (
+                ((func_time - class_time) / class_time) * 100 if class_time != 0 else 0
+            )
+            speedup_factor = func_time / class_time if class_time != 0 else float("inf")
+            absolute_time_savings = func_time - class_time
+            cost_per_element_func = func_time / size
+            cost_per_element_class = class_time / size
+
+            table_data.append(
+                [
+                    size,
+                    func_time,
+                    class_time,
+                    f"{percentage_increase:.2f}%",
+                    f"{speedup_factor:.2f}",
+                    f"{absolute_time_savings:.2e}",
+                ]
+            )
+            cost_per_element_table.append(
+                [size, f"{cost_per_element_func:.2e}", f"{cost_per_element_class:.2e}"]
+            )
+
         func_complexity = estimate_complexity(data_sizes, sort_func_results[alg])
         class_complexity = estimate_complexity(data_sizes, sort_classes_results[alg])
 
         # Display results in a tabular format
         print(f"\nResults for {alg}:")
         print(tabulate(table_data, headers=headers, tablefmt="pipe"))
+        print(f"\nCost per Element for {alg}:")
+        print(
+            tabulate(
+                cost_per_element_table,
+                headers=[
+                    "Data Size",
+                    "Cost per Element (Func)",
+                    "Cost per Element (Class)",
+                ],
+                tablefmt="pipe",
+            )
+        )
+        print(f"\nComplexity for {alg}:")
         print(f"Functional Complexity: {func_complexity}")
         print(f"Class-based Complexity: {class_complexity}\n")
 
@@ -116,5 +160,6 @@ def main(data_sizes):
 
 
 if __name__ == "__main__":
-    data_sizes = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000]
+    # data_sizes = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000]
+    data_sizes = [10, 20, 50, 100, 200, 400, 800, 1600, 3200, 6400, 12800]
     main(data_sizes)
