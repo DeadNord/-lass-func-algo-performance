@@ -67,8 +67,9 @@ def run_sorting_algorithm(algorithm, size):
     setup_code = f"from _sort_func_ import {algorithm}, generate_random_data"
     stmt = f"data = generate_random_data({size}); data_copy = data.copy(); {algorithm}(data_copy)"
     # Use timeit to measure execution time
-    times = timeit.repeat(stmt, setup=setup_code, number=10, repeat=3)
-    return min(times)  # Return the best time to minimize variability
+    repeat_number = 10
+    times = timeit.repeat(stmt, setup=setup_code, number=repeat_number, repeat=3)
+    return min(times) / repeat_number  # Return the average time per execution
 
 
 def display_results(results, data_sizes):
