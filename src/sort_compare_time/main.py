@@ -116,5 +116,5 @@ def main(data_sizes):
 
 
 if __name__ == "__main__":
-    data_sizes = [100, 500, 1000]
+    data_sizes = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000]
     main(data_sizes)
