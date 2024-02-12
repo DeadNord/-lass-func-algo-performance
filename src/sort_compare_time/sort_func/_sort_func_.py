@@ -66,12 +66,13 @@ def run_sorting_algorithm(algorithm, size):
     """Run a sorting algorithm and measure its execution time."""
     setup_code = f"from _sort_func_ import {algorithm}, generate_random_data"
     stmt = f"data = generate_random_data({size}); data_copy = data.copy(); {algorithm}(data_copy)"
+    # Use timeit to measure execution time
     times = timeit.repeat(stmt, setup=setup_code, number=10, repeat=3)
     return min(times)  # Return the best time to minimize variability
 
 
 def display_results(results, data_sizes):
-    """Plot the results of the sorting algorithms."""
+    """Display a plot comparing the performance of different sorting algorithms."""
     for algorithm, times in results.items():
         plt.plot(data_sizes, times, label=algorithm)
     plt.xlabel("Data Size")
@@ -82,15 +83,15 @@ def display_results(results, data_sizes):
 
 
 # Main Function
-def main(data_sizes, show_results=False, return_results=True):
-    """Run sorting algorithms on various data sizes and display results."""
+def main(data_sizes, show_results=True, return_results=False):
+    """Compare the performance of various sorting algorithms across different data sizes."""
     algorithms = {
         "Merge Sort": merge_sort,
         "Insertion Sort": insertion_sort,
         "TimSort": tim_sort,
     }
 
-    results = {alg: [] for alg in algorithms.keys()}
+    results = {alg: [] for alg in algorithms}
 
     for size in data_sizes:
         for alg_name, alg_func in algorithms.items():

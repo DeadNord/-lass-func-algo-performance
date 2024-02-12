@@ -4,71 +4,74 @@ from tabulate import tabulate
 import timeit
 
 
-# TimeMeasurer: Static class for measuring execution time of a function
+# Utility function to generate random data
+def generate_random_data(size):
+    """Generate a list of random integers."""
+    return [random.randint(1, 1000) for _ in range(size)]
+
+
 class TimeMeasurer:
+    """Static class for measuring execution time of sorting algorithms."""
+
     @staticmethod
     def measure_time(func, *args, number=10, repeat=3):
-        """Measure the execution time of a function using timeit.repeat().
+        """Measures the execution time of a provided sorting function.
 
         Args:
-            func (callable): The function to measure.
-            *args: Arguments to pass to the function.
-            number (int): How many times to call the function in each repeat.
-            repeat (int): How many times to repeat the timer (default 3).
+            func: The sorting function to measure.
+            data: The data to sort.
+            number: The number of times to execute the function per trial.
+            repeat: The number of trials to run.
 
         Returns:
-            float: The best time from the repeats.
+            The minimum execution time measured across all trials.
         """
         timer = timeit.Timer(lambda: func(*args))
         times = timer.repeat(repeat, number)
-        best_time = min(times) / number
 
-        return best_time
+        return min(times) / number
 
 
-# SortingAlgorithm: Base class for sorting algorithms
 class SortingAlgorithm:
+    """Abstract base class for sorting algorithms."""
+
     def sort(self, data):
         """Sort the data. Must be implemented by subclasses."""
         raise NotImplementedError("Sort function not defined")
 
 
-# MergeSort: Implements the merge sort algorithm
 class MergeSort(SortingAlgorithm):
-    def sort(self, arr):
-        """Recursive merge sort algorithm."""
-        if len(arr) > 1:
-            mid = len(arr) // 2
-            left_half = arr[:mid]
-            right_half = arr[mid:]
+    """Implements the merge sort algorithm."""
 
-            self.sort(left_half)
-            self.sort(right_half)
+    def sort(self, data):
+        if len(data) > 1:
+            mid = len(data) // 2
+            left, right = data[:mid], data[mid:]
+            self.sort(left)
+            self.sort(right)
+            self._merge(data, left, right)
 
-            i = j = k = 0
-
-            while i < len(left_half) and j < len(right_half):
-                if left_half[i] < right_half[j]:
-                    arr[k] = left_half[i]
-                    i += 1
-                else:
-                    arr[k] = right_half[j]
-                    j += 1
-                k += 1
-
-            while i < len(left_half):
-                arr[k] = left_half[i]
+    def _merge(self, data, left, right):
+        i = j = k = 0
+        while i < len(left) and j < len(right):
+            if left[i] < right[j]:
+                data[k] = left[i]
                 i += 1
-                k += 1
-
-            while j < len(right_half):
-                arr[k] = right_half[j]
+            else:
+                data[k] = right[j]
                 j += 1
-                k += 1
+            k += 1
+        while i < len(left):
+            data[k] = left[i]
+            i, k = i + 1, k + 1
+        while j < len(right):
+            data[k] = right[j]
+            j, k = j + 1, k + 1
 
 
-# InsertionSort: Implements the insertion sort algorithm
 class InsertionSort(SortingAlgorithm):
+    """Implements the insertion sort algorithm."""
+
     def sort(self, arr):
         """Simple insertion sort algorithm."""
         for i in range(1, len(arr)):
@@ -80,15 +83,17 @@ class InsertionSort(SortingAlgorithm):
             arr[j + 1] = key
 
 
-# TimSort: Utilizes Python's built-in sort, which is based on TimSort
 class TimSort(SortingAlgorithm):
+    """Wrapper for Python's built-in sort method, utilizing TimSort."""
+
     def sort(self, arr):
         """Python's built-in sort."""
         arr.sort()
 
 
-# SortingHandler: Manages sorting operations with different algorithms
 class SortingHandler:
+    """Manages sorting operations with different algorithms."""
+
     def __init__(self):
         self.algorithms = {
             "Merge Sort": MergeSort(),
@@ -107,47 +112,48 @@ class SortingHandler:
         return data_copy
 
 
-# ResultHandler: Handles displaying and plotting of results
 class ResultHandler:
+    """Handles displaying and plotting of sorting algorithm performance results."""
+
     @staticmethod
     def display_table(data_sizes, results):
         """Display results in a table format."""
         headers = ["Data Size"] + list(results.keys())
-        table_data = [
-            [size] + [results[algorithm][i] for algorithm in results]
+        rows = [
+            [size] + [results[algorithm][i] for algorithm in sorted(results)]
             for i, size in enumerate(data_sizes)
         ]
-        print(tabulate(table_data, headers=headers, tablefmt="pipe"))
+        print(tabulate(rows, headers=headers, tablefmt="pipe"))
 
     @staticmethod
     def plot_results(data_sizes, results):
-        """Plot the results of sorting algorithm comparisons."""
+        """Plots the sorting performance results."""
         for algorithm, execution_times in results.items():
             plt.plot(data_sizes, execution_times, label=algorithm)
         plt.xlabel("Data Size")
         plt.ylabel("Execution Time (seconds)")
-        plt.title("Sorting Algorithm Comparison")
+        plt.title("Sorting Algorithm Performance Comparison")
         plt.legend()
         plt.show()
 
 
-# MainProgram: Coordinates the execution of the sorting algorithm comparison
 class MainProgram:
+    """Coordinates the execution of sorting algorithm performance comparison."""
+
     def __init__(self, data_sizes):
-        self.sorter = SortingHandler()
         self.data_sizes = data_sizes
-        self.results = {alg: [] for alg in self.sorter.algorithms}
+        self.sorting_handler = SortingHandler()
+        self.results = {algorithm: [] for algorithm in self.sorting_handler.algorithms}
 
     def run(self, show_results=True, return_results=False):
-        """Execute the sorting comparison for different data sizes."""
+        """Executes the performance comparison for the specified data sizes."""
         for size in self.data_sizes:
             data = generate_random_data(size)
-
-            for title in self.sorter.algorithms:
+            for algorithm in self.sorting_handler.algorithms:
                 execution_time = TimeMeasurer.measure_time(
-                    self.sorter.perform_sorting, title, data.copy()
+                    self.sorting_handler.perform_sorting, algorithm, data
                 )
-                self.results[title].append(execution_time)
+                self.results[algorithm].append(execution_time)
 
         if show_results:
             ResultHandler.display_table(self.data_sizes, self.results)
@@ -155,12 +161,6 @@ class MainProgram:
 
         if return_results:
             return self.results
-
-
-# Utility function to generate random data
-def generate_random_data(size):
-    """Generate a list of random integers."""
-    return [random.randint(1, 1000) for _ in range(size)]
 
 
 # Main execution block
