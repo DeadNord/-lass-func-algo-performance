@@ -42,4 +42,4 @@
 
 
 ![alt text](image.png)
-![Alt text](../assets/image.png)
+![Alt text](../../assets/image.png)
